@@ -1,8 +1,10 @@
-using MinimalApi.Dominio.Entidades;
 using MinimalApi.DTOs;
-using MinimalApi.Infraestrutura.Db;
+using MinimalApi.Dominio.Entidades;
 using MinimalApi.Dominio.Interfaces;
+using MinimalApi.Infraestrutura.Db;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
+using System.Collections.Generic;
 
 namespace MinimalApi.Dominio.Servicos;
 
@@ -26,7 +28,7 @@ public class VeiculoServico : IVeiculoServico
         _contexto.SaveChanges();
     }
 
-    public Veiculo? BuscaPorId(int id)
+    public Veiculo? BuscarPorId(int id)
     {
         return _contexto.Veiculos.Where(v => v.Id == id).FirstOrDefault();
     }
@@ -40,16 +42,18 @@ public class VeiculoServico : IVeiculoServico
     public List<Veiculo> Todos(int? pagina = 1, string? nome = null, string? marca = null)
     {
         var query = _contexto.Veiculos.AsQueryable();
-        if(!string.IsNullOrEmpty(nome))
+        if (!string.IsNullOrEmpty(nome))
         {
-            query = query.Where(v => EF.Functions.Like(v.Nome.ToLower(), $"%{nome}%"));
+            query = query.Where(v => EF.Functions.Like(v.Nome.ToLower(), $"%{nome.ToLower()}%"));
         }
 
         int itensPorPagina = 10;
 
         if(pagina != null)
+        {
             query = query.Skip(((int)pagina - 1) * itensPorPagina).Take(itensPorPagina);
-
+        }
+        
         return query.ToList();
     }
 }
